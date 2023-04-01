@@ -6,15 +6,15 @@ import android.content.res.Configuration
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.core.app.ShareCompat
 import androidx.recyclerview.widget.GridLayoutManager
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.*
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.muhamapps.filmcatalogueapp1.R
@@ -30,9 +30,13 @@ class HomeActivity : AppCompatActivity(), FilmShareCallback {
 
     private val homeViewModel: HomeViewModel by viewModel()
 
-    private var mInterstitialAd: InterstitialAd? = null
     private var _binding: ActivityHomeBinding? = null
     private val binding get() = _binding
+    private var interstitialAd: InterstitialAd? = null
+    private var countdownTimer: CountDownTimer? = null
+    private var gameIsInProgress = false
+    private var adIsLoading: Boolean = false
+    private var timerMilliseconds = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,32 +45,129 @@ class HomeActivity : AppCompatActivity(), FilmShareCallback {
         supportActionBar?.setLogo(R.drawable.actionbar_icon)
 
 
-        admobInit()
+        binding?.myButton?.visibility = View.INVISIBLE
+
+        if (!adIsLoading && interstitialAd == null) {
+            adIsLoading = true
+            loadAd()
+        }
+
+        createTimer(4000)
+        countdownTimer?.start()
+
+
+//        admobInit()
         getFilmData()
     }
 
-    private fun admobInit() {
-        MobileAds.initialize(this)
+//    private fun admobInit() {
+//        MobileAds.initialize(this)
+//
+//        val adRequest = AdRequest.Builder().build()
+//        InterstitialAd.load(this,"ca-app-pub-3432330311757220/3260605421", adRequest, object : InterstitialAdLoadCallback() {
+//            override fun onAdFailedToLoad(adError: LoadAdError) {
+//                Log.d(TAG, adError.toString())
+//                interstitialAd = null
+//            }
+//
+//            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+//                Log.d(TAG, "Ad was loaded.")
+//                this@HomeActivity.interstitialAd = interstitialAd
+//            }
+//        })
+//
+//        binding?.myButton?.setOnClickListener {
+//            if (interstitialAd != null) {
+//                interstitialAd?.show(this)
+//            } else {
+//                Log.d("TAG", "The interstitial wasn't loaded yet.")
+//            }
+//        }
+//    }
 
-        val adRequest = AdRequest.Builder().build()
-        InterstitialAd.load(this,"ca-app-pub-3940256099942544/1033173712", adRequest, object : InterstitialAdLoadCallback() {
-            override fun onAdFailedToLoad(adError: LoadAdError) {
-                Log.d(TAG, adError.toString())
-                mInterstitialAd = null
-            }
+    private fun loadAd() {
+        var adRequest = AdRequest.Builder().build()
 
-            override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                Log.d(TAG, "Ad was loaded.")
-                mInterstitialAd = interstitialAd
-            }
-        })
+        InterstitialAd.load(
+            this,
+            "ca-app-pub-3432330311757220/3260605421",
+            adRequest,
+            object : InterstitialAdLoadCallback() {
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    Log.d(TAG, adError?.message)
+                    interstitialAd = null
+                    adIsLoading = false
+                    val error =
+                        "domain: ${adError.domain}, code: ${adError.code}, " + "message: ${adError.message}"
+                    Toast.makeText(
+                        this@HomeActivity,
+                        "onAdFailedToLoad() with error $error",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
 
-        binding?.myButton?.setOnClickListener {
-            if (mInterstitialAd != null) {
-                mInterstitialAd?.show(this)
-            } else {
-                Log.d("TAG", "The interstitial wasn't loaded yet.")
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    Log.d(TAG, "Ad was loaded.")
+                    interstitialAd = ad
+                    adIsLoading = false
+                    Toast.makeText(this@HomeActivity, "onAdLoaded()", Toast.LENGTH_SHORT).show()
+                }
             }
+        )
+    }
+
+    // Create the game timer, which counts down to the end of the level
+    // and shows the "retry" button.
+    private fun createTimer(milliseconds: Long) {
+        countdownTimer?.cancel()
+
+        countdownTimer =
+            object : CountDownTimer(milliseconds, 50) {
+                override fun onTick(millisUntilFinished: Long) {
+                    timerMilliseconds = millisUntilFinished
+                    binding?.timer?.text = "seconds remaining: ${ millisUntilFinished / 1000 + 1 }"
+                }
+
+                override fun onFinish() {
+                    gameIsInProgress = false
+                    binding?.timer?.text = "done!"
+                    showInterstitial()
+                    binding?.myButton?.visibility = View.VISIBLE
+                    createTimer(4000)
+                    countdownTimer?.start()
+                }
+            }
+    }
+
+    // Show the ad if it's ready. Otherwise toast and restart the game.
+    private fun showInterstitial() {
+        if (interstitialAd != null) {
+            interstitialAd?.fullScreenContentCallback =
+                object : FullScreenContentCallback() {
+                    override fun onAdDismissedFullScreenContent() {
+                        Log.d(TAG, "Ad was dismissed.")
+                        // Don't forget to set the ad reference to null so you
+                        // don't show the ad a second time.
+                        interstitialAd = null
+                        loadAd()
+                    }
+
+                    override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                        Log.d(TAG, "Ad failed to show.")
+                        // Don't forget to set the ad reference to null so you
+                        interstitialAd = null
+                        // don't show the ad a second time.
+                    }
+
+                    override fun onAdShowedFullScreenContent() {
+                        Log.d(TAG, "Ad showed fullscreen content.")
+                        // Called when ad is dismissed.
+                    }
+                }
+            interstitialAd?.show(this)
+        } else {
+            Toast.makeText(this, "Ad wasn't loaded.", Toast.LENGTH_SHORT).show()
         }
     }
 
