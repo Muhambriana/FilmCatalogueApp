@@ -2,9 +2,11 @@ package com.muhamapps.filmcatalogueapp1.detail
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.google.android.gms.ads.*
 import com.muhamapps.filmcatalogueapp1.R
 import com.muhamapps.filmcatalogueapp1.core.domain.model.Film
 import com.muhamapps.filmcatalogueapp1.core.utils.NetworkInfo.IMAGE_URL
@@ -17,6 +19,7 @@ class DetailFilmActivity : AppCompatActivity() {
     private val detailFilmViewModel: DetailFilmViewModel by viewModel()
     private lateinit var binding: ActivityDetailFilmBinding
 
+    lateinit var adView : AdView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailFilmBinding.inflate(layoutInflater)
@@ -25,6 +28,52 @@ class DetailFilmActivity : AppCompatActivity() {
 
         val detailFilm = intent.getParcelableExtra<Film>(EXTRA_DATA)
         showDetailFilm(detailFilm)
+        showBannerAd()
+    }
+
+    private fun showBannerAd() {
+        adView = binding.adView
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+
+        adView.adListener = object : AdListener(){
+            override fun onAdFailedToLoad(p0: LoadAdError) {
+                super.onAdFailedToLoad(p0)
+                val toastMessage: String = "ad fail to load +"
+                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+            }
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+                val toastMessage: String = "ad loaded"
+                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+            }
+            override fun onAdOpened() {
+                super.onAdOpened()
+                val toastMessage: String = "ad is open"
+                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+            }
+            override fun onAdClicked() {
+                super.onAdClicked()
+                val toastMessage: String = "ad is clicked"
+                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+            }
+
+            override fun onAdClosed() {
+                super.onAdClosed()
+                val toastMessage: String = "ad is closed"
+                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+            }
+            override fun onAdImpression() {
+                super.onAdImpression()
+                val toastMessage: String = "ad impression"
+                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+            }
+            override fun onAdSwipeGestureClicked() {
+                super.onAdSwipeGestureClicked()
+                val toastMessage: String = "ad left application"
+                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
