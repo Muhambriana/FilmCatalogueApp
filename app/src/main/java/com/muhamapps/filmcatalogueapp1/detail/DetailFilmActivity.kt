@@ -40,38 +40,38 @@ class DetailFilmActivity : AppCompatActivity() {
             override fun onAdFailedToLoad(p0: LoadAdError) {
                 super.onAdFailedToLoad(p0)
                 val toastMessage: String = "ad fail to load +"
-                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+//                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
             }
             override fun onAdLoaded() {
                 super.onAdLoaded()
                 val toastMessage: String = "ad loaded"
-                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+//                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
             }
             override fun onAdOpened() {
                 super.onAdOpened()
                 val toastMessage: String = "ad is open"
-                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+//                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
             }
             override fun onAdClicked() {
                 super.onAdClicked()
                 val toastMessage: String = "ad is clicked"
-                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+//                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
             }
 
             override fun onAdClosed() {
                 super.onAdClosed()
                 val toastMessage: String = "ad is closed"
-                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+//                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
             }
             override fun onAdImpression() {
                 super.onAdImpression()
                 val toastMessage: String = "ad impression"
-                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+//                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
             }
             override fun onAdSwipeGestureClicked() {
                 super.onAdSwipeGestureClicked()
                 val toastMessage: String = "ad left application"
-                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
+//                Toast.makeText(applicationContext, toastMessage.toString(), Toast.LENGTH_LONG).show()
             }
         }
     }
